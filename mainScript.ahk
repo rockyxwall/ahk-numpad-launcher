@@ -23,6 +23,7 @@ global SLOT := Map(
 ; ═══════════════════════════════════════════════════════════════════════════
 CoordMode "Pixel", "Screen"
 CoordMode "Mouse", "Screen"
+SetMouseDelay -1
 
 ; ═══════════════════════════════════════════════════════════════════════════
 ; ACTION ROUTER  (no editing needed ever)

@@ -72,7 +72,7 @@ class AutoClicker {
         if !AutoClicker.running
             return
         if AutoClicker.fixedPos
-            Click AutoClicker.fixedX " " AutoClicker.fixedY
+            Click(AutoClicker.fixedX, AutoClicker.fixedY)
         else
             Click
     }
