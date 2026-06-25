@@ -5,10 +5,10 @@
 ; ACTION CLASS IMPORTS
 ; Add a #Include line here for each action.
 ; ═══════════════════════════════════════════════════════════════════════════
+#Include "lib\desktopSwitch.ahk"
 #Include "lib\autoClicker.ahk"
 #Include "lib\holdToggle.ahk"
 #Include "lib\robloxAFK.ahk"
-#Include "lib\desktopSwitch.ahk"
 
 ; ═══════════════════════════════════════════════════════════════════════════
 ; CONFIGURATION — only thing you ever touch

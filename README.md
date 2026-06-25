@@ -1,35 +1,26 @@
-# AutoHotkey Action Launcher
+# AutoHotkey Numpad Launcher
 
-A slot-based hotkey launcher for AutoHotkey v2. Press **Numpad0 + SlotNumber** to toggle an action on and off. Each action lives in its own file under `lib/` — clean, modular, and easy to extend.
+**`mainScript.ahk`** is the only file you touch. It loads everything from `lib/`.
 
-## Actions
+## Hotkeys
 
-| # | Action | What it does |
-|---|--------|-------------|
-| 1 | **AutoClicker** | Clicks the mouse repeatedly at your cursor (or at a pinned position). Speed up/down with `+` / `-`, reset to default with `/`, pin position with `*`. |
-| 2 | **HoldToggle** | Hold down any key (or mouse button) by pressing it simultaneously with the slot hotkey. Press the same combo again to release. Press Esc to release everything at once. |
-| 3 | **RobloxAFK** | Every 15 minutes, finds a Roblox window (even on another virtual desktop) and does some light input to reset the AFK timer, then restores focus. |
+| Combo | Action |
+|-------|--------|
+| `Numpad0 + 1–9` | Toggle slot |
+| `Numpad0 + Left/Right` | Switch virtual desktop |
+| `Numpad1 + +/-/*` | Slot 1 speed up/down, toggle fixed position |
+| `Numpad1 + /` | Slot 1 reset to default speed |
 
-## How it works
+Every hotkey is dual-bound for NumLock on/off (`NumpadIns` replaces `Numpad0`).
 
-**`mainScript.ahk`** is the brain. It defines a `SLOT` map (slot number → class name) and a router function. You press `Numpad0 + 1` → it calls `AutoClicker.Toggle()`. Each class lives in `lib/<name>.ahk` and is completely self-contained.
+## Adding a slot
 
-Slots 4–9 are reserved but disabled by default. To enable one, just set its name in the `SLOT` map and add a `case` to the `switch`.
-
-## Desktop switching
-
-`Numpad0 + Left/Right` switches virtual desktops — useful companion for the RobloxAFK module.
-
-## Adding a new action
-
-```ahk
-; 1. Create lib/yourAction.ahk with a class that has a static Toggle() method
-; 2. Add to SLOT map: N, "YourAction"
-; 3. Add case to the switch in mainScript.ahk
-; 4. If it has per-slot controls (+/-/*), add hotkeys at the bottom of the file
+```
+#Include "lib\newClass.ahk"     → in the imports section
+... N, NewClass                  → in the SLOT map
 ```
 
-No build step. No dependencies. Run with `mainScript.ahk` and it just lives in your tray.
+That's it. The router calls `NewClass.Toggle()` automatically — no switch, no case, no wiring.
 
 ## Requirements
 
