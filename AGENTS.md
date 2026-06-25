@@ -8,47 +8,41 @@
 
 ## Build / Lint / Test Commands
 - **No build system, no package manager, no test framework.**
-- **Lint:** Use `C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe / syntax script.ahk` to check syntax without running.
-- **Run a script:** `"C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe" script.ahk`
-- **Run a single test:** There is no test framework. To test, run the script and toggle the feature via its hotkey.
-- **Type-checking:** None — AHK v2 is dynamically typed. Use `static`/`global` discipline instead.
+- **Lint:** `"C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe" /syntax script.ahk`
+- **Run a script:** `"C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe" mainScript.ahk`
+- **Run a single action:** Load the script and press the bound Numpad hotkey (Numpad0+Numpad1 etc.)
+- **Type-checking:** None — AHK v2 is dynamically typed. Use `static`/`global` discipline.
 - **CI:** None. This is a personal utility repo.
 
 ## Project Structure
 ```
 AutoHotkey/
-  mainScript.ahk       # Central launcher — class-based, slot/router pattern
-  autoClicker.ahk      # Standalone auto-clicker (procedural style)
-  desktopSwich.ahk     # Desktop-switch hotkey (procedural style)
-  imageDetector.ahk    # Image-search clicker (procedural style)
-  robloxAfk.ahk        # Roblox AFK bypass (procedural style)
-  target.png           # Test image used by imageDetector.ahk
-  AGENTS.md            # This file
+  mainScript.ahk       # Central launcher — slot/router pattern, #Includes lib/
+  lib/
+    autoClicker.ahk     # AutoClicker class
+    holdToggle.ahk      # HoldToggle class
+    robloxAFK.ahk       # RobloxAFK class
+    img/
+      target.png        # Asset used by external scripts (if any)
+  AGENTS.md
 ```
 
-There are two supported architectural styles (both in use):
+## Architecture: Pure Static Classes
 
-### 1. Class-based (mainScript.ahk)
-Use for the central launcher. Each action is a **class** with only `static` members.
+Every action is a **class** in `lib/` with only `static` members. No constructors, no `__New`, no instantiation.
+
 - `static` config constants at top (UPPER_SNAKE_CASE)
 - `static` state booleans (lowercase)
-- `static Toggle()` as the public entry point (called by router)
+- `static Toggle()` as the public entry point (called by router via `ExecuteSlot`)
 - `static _Xxx()` as private helpers (prefixed with `_`)
 - Timer callbacks use `ObjBindMethod(ClassName, "_MethodName")`
-- No constructor, no `__New`, no instantiation — pure static classes.
-
-### 2. Procedural (standalone .ahk files)
-Use for self-contained single-purpose scripts that run independently.
-- `global` state variables
-- Free functions (PascalCase), `ToggleXxx()` convention
-- `SetTimer XxxLoop, 0` to stop, `SetTimer XxxLoop, N` to start
-- `static` locals for config constants inside the loop function
 
 ## Code Style Guidelines
 
 ### Imports / Includes
-- No module system. Use `#Include "file.ahk"` to share code between scripts (avoid when possible).
-- Prefer one `.ahk` = one self-contained script. Dependencies should be minimal.
+- `mainScript.ahk` uses `#Include "lib\filename.ahk"` to pull in action classes.
+- Each `lib/*.ahk` file is self-contained with its own `#Requires AutoHotkey v2.0`.
+- No module system, no circular dependencies, no `#Include` from within lib/ files.
 
 ### Formatting
 - No semicolons (AHK v2 uses line-based syntax).
@@ -72,16 +66,14 @@ Use `; ── Subsection ──────────────────�
 ### Naming Conventions
 | Thing | Convention | Example |
 |-------|-----------|---------|
-| Classes | PascalCase | `AutoClicker`, `HoldToggle` |
-| Functions | PascalCase | `ToggleAutoClicker()`, `ExecuteSlot()` |
-| Static methods | PascalCase | static `Toggle()`, `_Loop()` |
-| Global vars | camelCase | `autoClickerRunning` |
-| Static class fields | lowercase | `static running := false` |
+| Classes | PascalCase | `AutoClicker`, `HoldToggle`, `RobloxAFK` |
+| Functions | PascalCase | `ExecuteSlot()`, `Toggle()` |
+| Static methods | PascalCase | `static Toggle()`, `static _Loop()` |
+| Static state fields | lowercase | `static running := false`, `static held := Map()` |
 | Static config consts | UPPER_SNAKE | `static CLICK_SPEED := 250` |
-| Local vars | camelCase | `searchStartTime`, `wasActive` |
-| Labels (callbacks) | PascalCase | `AutoClickerLoop:` |
+| Local vars | camelCase | `searchStartTime`, `wasActive`, `originalWindow` |
+| Files (lib/) | camelCase | `autoClicker.ahk`, `holdToggle.ahk` |
 | Hotkey names | AHK native | `Numpad0 & Numpad1::` |
-| Files | PascalCase / camelCase | `mainScript.ahk`, `robloxAfk.ahk` |
 
 ### Toggle Pattern (always the same)
 ```ahk
@@ -103,31 +95,37 @@ static _Loop() {
 ```
 
 ### Timers
-- Use `SetTimer ObjBindMethod(ClassName, "Method"), ms` in class-based code.
-- Use `SetTimer FunctionName, ms` in procedural code.
+- Always use `SetTimer ObjBindMethod(ClassName, "Method"), ms`.
 - Pass `0` (not `"Off"`) to stop a timer.
 - Minimum ~50ms for responsive loops; 100+ ms for background polling.
+- Never use label-based `SetTimer` in class-based code.
+
+### Slot / Router Pattern
+- `mainScript.ahk` defines a `global SLOT := Map(1, "AutoClicker", 2, "HoldToggle", ...)`
+- `ExecuteSlot(n)` looks up the name in `SLOT`, calls `ClassName.Toggle()` via `switch`.
+- Adding a new action: create class in `lib/`, add entry to `SLOT`, add `case` to `switch`.
+- Dual hotkey binding (Numpad0 + NumpadIns) for every slot, NumLock-agnostic.
 
 ### CoordMode & Global Setup
-- Place `CoordMode` directives at the top of the script, after `#Requires`.
-- Use `CoordMode "Pixel", "Screen"` and `CoordMode "Mouse", "Screen"` for screen-relative coordinates.
+- Place `CoordMode` directives at the top of `mainScript.ahk`, after `#Requires`.
+- `CoordMode "Pixel", "Screen"` and `CoordMode "Mouse", "Screen"` for screen-relative coords.
 - Declare `global` variables at the top, grouped by purpose.
 
 ### Error Handling
-- Use `try/catch` sparingly — only around operations that legitimately fail (e.g., `WinActivate` on a missing window, `ImageSearch` parsing errors).
-- In catch blocks, stop any running timers and reset state to false.
-- Do NOT wrap normal logic in try/catch. Let AHK's built-in error dialog surface bugs.
+- Use `try/catch` sparingly — only around operations that legitimately fail (e.g., `WinActivate` on a missing window).
+- In catch blocks, stop any running timers and reset state to `false`.
+- Do NOT wrap normal logic in `try/catch`. Let AHK's built-in error dialog surface bugs.
 - Use `ProcessExist()` checks before assuming a target process is running.
 
 ### Comments
 - Section headers use box-drawing chars (═, ─, █).
 - Inline comments: `  ; explanation` — two spaces before semicolon.
-- `; ── Called by router ──────────────────────────` for public entry points.
-- `; ── Internal ──────────────────────────────────` for private helpers.
+- `; ── Called by router ─────────────────────` for public entry points.
+- `; ── Internal ─────────────────────────────` for private helpers.
 - No comments on obvious code. Comment the *why*, not the *what*.
 
 ### Hotkeys
-- Dual-map hotkeys to work with NumLock on (Numpad0) and off (NumpadIns):
+- Dual-map every hotkey to work with NumLock on (Numpad0) and off (NumpadIns):
   ```ahk
   Numpad0 & Numpad1::
   NumpadIns & Numpad1::
@@ -137,7 +135,6 @@ static _Loop() {
       ExecuteSlot(1)
   }
   ```
-- Use `$` prefix (`$Numpad0::`) when a hotkey should not be triggered by its own `Send`.
 - Wrap multi-line hotkey bodies in `{ }`.
 
 ### Send vs SendEvent
@@ -153,7 +150,8 @@ static _Loop() {
 
 ### What NOT to do
 - Do NOT use v1 syntax (`Send ^c`, comma-separated params, `%var%`).
-- Do NOT use `SetTimer` with label names in class-based code — use `ObjBindMethod`.
-- Do NOT use `global` inside functions unless you absolutely need to mutate module state.
-- Do NOT add external dependencies or NuGet/pip/npm packages.
-- Do NOT create files outside this directory.
+- Do NOT use `SetTimer` with label names — use `ObjBindMethod`.
+- Do NOT use `global` inside functions unless absolutely necessary to mutate module state.
+- Do NOT add external dependencies (no NuGet/pip/npm packages).
+- Do NOT create files outside this repository.
+- Do NOT use `global` for class state — use `static` class fields instead.
