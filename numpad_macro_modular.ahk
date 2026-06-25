@@ -61,55 +61,73 @@ Numpad0 & Numpad1::
 Numpad0 & NumpadEnd::
 NumpadIns & Numpad1::
 NumpadIns & NumpadEnd::
-{ ExecuteSlot(1) }
+{
+    ExecuteSlot(1)
+}
 
 Numpad0 & Numpad2::
 Numpad0 & NumpadDown::
 NumpadIns & Numpad2::
 NumpadIns & NumpadDown::
-{ ExecuteSlot(2) }
+{
+    ExecuteSlot(2)
+}
 
 Numpad0 & Numpad3::
 Numpad0 & NumpadPgDn::
 NumpadIns & Numpad3::
 NumpadIns & NumpadPgDn::
-{ ExecuteSlot(3) }
+{
+    ExecuteSlot(3)
+}
 
 Numpad0 & Numpad4::
 Numpad0 & NumpadLeft::
 NumpadIns & Numpad4::
 NumpadIns & NumpadLeft::
-{ ExecuteSlot(4) }
+{
+    ExecuteSlot(4)
+}
 
 Numpad0 & Numpad5::
 Numpad0 & NumpadClear::
 NumpadIns & Numpad5::
 NumpadIns & NumpadClear::
-{ ExecuteSlot(5) }
+{
+    ExecuteSlot(5)
+}
 
 Numpad0 & Numpad6::
 Numpad0 & NumpadRight::
 NumpadIns & Numpad6::
 NumpadIns & NumpadRight::
-{ ExecuteSlot(6) }
+{
+    ExecuteSlot(6)
+}
 
 Numpad0 & Numpad7::
 Numpad0 & NumpadHome::
 NumpadIns & Numpad7::
 NumpadIns & NumpadHome::
-{ ExecuteSlot(7) }
+{
+    ExecuteSlot(7)
+}
 
 Numpad0 & Numpad8::
 Numpad0 & NumpadUp::
 NumpadIns & Numpad8::
 NumpadIns & NumpadUp::
-{ ExecuteSlot(8) }
+{
+    ExecuteSlot(8)
+}
 
 Numpad0 & Numpad9::
 Numpad0 & NumpadPgUp::
 NumpadIns & Numpad9::
 NumpadIns & NumpadPgUp::
-{ ExecuteSlot(9) }
+{
+    ExecuteSlot(9)
+}
 
 
 ; ███████████████████████████████████████████████████████████████████████████
