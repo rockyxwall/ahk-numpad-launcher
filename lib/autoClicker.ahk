@@ -8,7 +8,8 @@
 ; ═══════════════════════════════════════════════════════════════════════════
 class AutoClicker {
     ; ── Settings ────────────────────────────────────────────────────────────
-    static CLICK_SPEED := 250       ; ms between clicks
+    static DEFAULT_CLICK_SPEED := 250
+    static CLICK_SPEED := AutoClicker.DEFAULT_CLICK_SPEED       ; ms between clicks
     static SPEED_STEP  := 150       ; ms per +/- press
     static MIN_SPEED   := 10
     ; MAX_SPEED not set — no upper cap
@@ -59,6 +60,13 @@ class AutoClicker {
         }
     }
 
+    static Reset() {
+        AutoClicker.CLICK_SPEED := AutoClicker.DEFAULT_CLICK_SPEED
+        if AutoClicker.running
+            SetTimer ObjBindMethod(AutoClicker, "_Loop"), AutoClicker.CLICK_SPEED
+        AutoClicker._Notify "AutoClicker: RESET " AutoClicker.CLICK_SPEED "ms"
+    }
+
     ; ── Internal ─────────────────────────────────────────────────────────────
     static _Loop() {
         if !AutoClicker.running
@@ -92,4 +100,10 @@ Numpad1 & NumpadMult::
 NumpadEnd & NumpadMult::
 {
     AutoClicker.ToggleFixed()
+}
+
+Numpad1 & NumpadDiv::
+NumpadEnd & NumpadDiv::
+{
+    AutoClicker.Reset()
 }
