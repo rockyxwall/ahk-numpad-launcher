@@ -8,6 +8,7 @@
 #Include "lib\autoClicker.ahk"
 #Include "lib\holdToggle.ahk"
 #Include "lib\robloxAFK.ahk"
+#Include "lib\desktopSwitch.ahk"
 
 ; ═══════════════════════════════════════════════════════════════════════════
 ; CONFIGURATION — only thing you ever touch
@@ -42,21 +43,6 @@ ExecuteSlot(n) {
     if (c = "Disabled")
         return
     c.Toggle()
-}
-
-; ═══════════════════════════════════════════════════════════════════════════
-; DESKTOP SWITCHING HOTKEYS
-; ═══════════════════════════════════════════════════════════════════════════
-Numpad0 & Left::
-NumpadIns & Left::
-{
-    Send "{LWin down}{LCtrl down}{Left}{LWin up}{LCtrl up}"
-}
-
-Numpad0 & Right::
-NumpadIns & Right::
-{
-    Send "{LWin down}{LCtrl down}{Right}{LWin up}{LCtrl up}"
 }
 
 ; ═══════════════════════════════════════════════════════════════════════════
