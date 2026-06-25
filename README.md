@@ -1,4 +1,4 @@
-# AutoHotkey Numpad Launcher
+# ahk-numpad-launcher
 
 **`mainScript.ahk`** is the only file you touch. It loads everything from `lib/`.
 
