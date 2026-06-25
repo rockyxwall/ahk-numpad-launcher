@@ -106,6 +106,17 @@ static _Loop() {
 - Adding a new action: create class in `lib/`, add entry to `SLOT`, add `case` to `switch`.
 - Dual hotkey binding (Numpad0 + NumpadIns) for every slot, NumLock-agnostic.
 
+### Per-Slot Control Keys
+Each slot gets `+` (speed up), `-` (speed down), `*` (toggle fixed position) using the **slot key as the prefix modifier**. Controls are defined in the class file, not mainScript.ahk:
+```ahk
+; Slot N control hotkeys (defined at file scope in lib/<class>.ahk)
+Numpad{N} & NumpadAdd::       ClassName.SpeedUp()
+Numpad{N} & NumpadSub::       ClassName.SpeedDown()
+Numpad{N} & NumpadMult::      ClassName.ToggleFixed()
+Numpad{N} & NumpadDiv::       (reserved)
+```
+The prefix key is dual-bound for NumLock: `Numpad{N}` / `NumpadHome/End/PgDn/PgUp` (Numpad1→End, Numpad2→Down, etc.). Each class exposes these methods only if it supports the feature. Controls are **no-ops when the script is off** — they check `ClassName.running` and return immediately. No CPU overhead when inactive.
+
 ### CoordMode & Global Setup
 - Place `CoordMode` directives at the top of `mainScript.ahk`, after `#Requires`.
 - `CoordMode "Pixel", "Screen"` and `CoordMode "Mouse", "Screen"` for screen-relative coords.
