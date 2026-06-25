@@ -2,14 +2,22 @@
 #SingleInstance Force
 
 ; ═══════════════════════════════════════════════════════════════════════════
-; CONFIGURATION - only thing you ever touch
-; Map slot number → class name
+; ACTION CLASS IMPORTS
+; Add a #Include line here for each action.
+; ═══════════════════════════════════════════════════════════════════════════
+#Include "lib\autoClicker.ahk"
+#Include "lib\holdToggle.ahk"
+#Include "lib\robloxAFK.ahk"
+
+; ═══════════════════════════════════════════════════════════════════════════
+; CONFIGURATION — only thing you ever touch
+; Map slot number → class object
 ; Use "Disabled" to leave a slot empty
 ; ═══════════════════════════════════════════════════════════════════════════
 global SLOT := Map(
-    1, "AutoClicker",
-    2, "HoldToggle",
-    3, "RobloxAFK",
+    1, AutoClicker,
+    2, HoldToggle,
+    3, RobloxAFK,
     4, "Disabled",
     5, "Disabled",
     6, "Disabled",
@@ -26,18 +34,14 @@ CoordMode "Mouse", "Screen"
 SetMouseDelay -1
 
 ; ═══════════════════════════════════════════════════════════════════════════
-; ACTION ROUTER  (no editing needed ever)
+; ACTION ROUTER  (never needs editing)
 ; ═══════════════════════════════════════════════════════════════════════════
 ExecuteSlot(n) {
     global SLOT
-    name := SLOT.Has(n) ? SLOT[n] : "Disabled"
-    if (name = "Disabled" or name = "")
+    c := SLOT.Has(n) ? SLOT[n] : "Disabled"
+    if (c = "Disabled")
         return
-    switch name {
-        case "AutoClicker": AutoClicker.Toggle()
-        case "HoldToggle":  HoldToggle.Toggle()
-        case "RobloxAFK":   RobloxAFK.Toggle()
-    }
+    c.Toggle()
 }
 
 ; ═══════════════════════════════════════════════════════════════════════════
@@ -130,14 +134,3 @@ NumpadIns & NumpadPgUp::
     ExecuteSlot(9)
 }
 
-
-; ███████████████████████████████████████████████████████████████████████████
-; ACTION CLASS IMPORTS
-; Each file in lib/ is 100% self-contained.
-; To add a new action: create a class in lib/, add its name to SLOT above.
-; To remove: delete the file, set slot to "Disabled".
-; Nothing else needs to change ever.
-; ███████████████████████████████████████████████████████████████████████████
-#Include "lib\autoClicker.ahk"
-#Include "lib\holdToggle.ahk"
-#Include "lib\robloxAFK.ahk"
