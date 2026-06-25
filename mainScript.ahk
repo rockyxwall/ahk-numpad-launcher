@@ -1,19 +1,22 @@
-﻿#Requires AutoHotkey v2.0
+#Requires AutoHotkey v2.0
 #SingleInstance Force
 
 ; ═══════════════════════════════════════════════════════════════════════════
-; CONFIGURATION - CHANGE ACTIONS HERE
+; CONFIGURATION - only thing you ever touch
+; Map slot number → class name
+; Use "Disabled" to leave a slot empty
 ; ═══════════════════════════════════════════════════════════════════════════
-
-ACTION_NUM1 := "AutoClicker"   ; Num0+Num1 = Auto Clicker
-ACTION_NUM2 := "HoldToggle"    ; Num0+Num2 = Hold Toggle
-ACTION_NUM3 := "RobloxAFK"     ; Num0+Num3 = Roblox AFK Bypass
-ACTION_NUM4 := "Disabled"      ; Num0+Num4 = Nothing
-ACTION_NUM5 := "Disabled"      ; Num0+Num5 = Nothing
-ACTION_NUM6 := "Disabled"      ; Num0+Num6 = Nothing
-ACTION_NUM7 := "Disabled"      ; Num0+Num7 = Nothing
-ACTION_NUM8 := "Disabled"      ; Num0+Num8 = Nothing
-ACTION_NUM9 := "Disabled"      ; Num0+Num9 = Nothing
+global SLOT := Map(
+    1, "AutoClicker",
+    2, "HoldToggle",
+    3, "RobloxAFK",
+    4, "Disabled",
+    5, "Disabled",
+    6, "Disabled",
+    7, "Disabled",
+    8, "Disabled",
+    9, "Disabled"
+)
 
 ; ═══════════════════════════════════════════════════════════════════════════
 ; SYSTEM CONFIGURATION
@@ -21,9 +24,20 @@ ACTION_NUM9 := "Disabled"      ; Num0+Num9 = Nothing
 CoordMode "Pixel", "Screen"
 CoordMode "Mouse", "Screen"
 
-global autoClickerRunning := false
-global robloxAFKRunning   := false
-global heldInputs         := Map()   ; tracks everything currently held
+; ═══════════════════════════════════════════════════════════════════════════
+; ACTION ROUTER  (no editing needed ever)
+; ═══════════════════════════════════════════════════════════════════════════
+ExecuteSlot(n) {
+    global SLOT
+    name := SLOT.Has(n) ? SLOT[n] : "Disabled"
+    if (name = "Disabled" or name = "")
+        return
+    switch name {
+        case "AutoClicker": AutoClicker.Toggle()
+        case "HoldToggle":  HoldToggle.Toggle()
+        case "RobloxAFK":   RobloxAFK.Toggle()
+    }
+}
 
 ; ═══════════════════════════════════════════════════════════════════════════
 ; DESKTOP SWITCHING HOTKEYS
@@ -41,29 +55,22 @@ NumpadIns & Right::
 }
 
 ; ═══════════════════════════════════════════════════════════════════════════
-; NUMBER KEY ACTIONS
+; NUMBER KEY HOTKEYS  (no editing needed ever)
 ; ═══════════════════════════════════════════════════════════════════════════
-
 Numpad0 & Numpad1::
 Numpad0 & NumpadEnd::
 NumpadIns & Numpad1::
 NumpadIns & NumpadEnd::
 {
-    global ACTION_NUM1
-    ExecuteAction(ACTION_NUM1)
+    ExecuteSlot(1)
 }
 
-; ── Num2: HoldToggle needs to capture co-pressed key at trigger time ───────
 Numpad0 & Numpad2::
 Numpad0 & NumpadDown::
 NumpadIns & Numpad2::
 NumpadIns & NumpadDown::
 {
-    global ACTION_NUM2
-    if (ACTION_NUM2 = "HoldToggle")
-        HoldToggleCapture()
-    else
-        ExecuteAction(ACTION_NUM2)
+    ExecuteSlot(2)
 }
 
 Numpad0 & Numpad3::
@@ -71,8 +78,7 @@ Numpad0 & NumpadPgDn::
 NumpadIns & Numpad3::
 NumpadIns & NumpadPgDn::
 {
-    global ACTION_NUM3
-    ExecuteAction(ACTION_NUM3)
+    ExecuteSlot(3)
 }
 
 Numpad0 & Numpad4::
@@ -80,8 +86,7 @@ Numpad0 & NumpadLeft::
 NumpadIns & Numpad4::
 NumpadIns & NumpadLeft::
 {
-    global ACTION_NUM4
-    ExecuteAction(ACTION_NUM4)
+    ExecuteSlot(4)
 }
 
 Numpad0 & Numpad5::
@@ -89,8 +94,7 @@ Numpad0 & NumpadClear::
 NumpadIns & Numpad5::
 NumpadIns & NumpadClear::
 {
-    global ACTION_NUM5
-    ExecuteAction(ACTION_NUM5)
+    ExecuteSlot(5)
 }
 
 Numpad0 & Numpad6::
@@ -98,8 +102,7 @@ Numpad0 & NumpadRight::
 NumpadIns & Numpad6::
 NumpadIns & NumpadRight::
 {
-    global ACTION_NUM6
-    ExecuteAction(ACTION_NUM6)
+    ExecuteSlot(6)
 }
 
 Numpad0 & Numpad7::
@@ -107,8 +110,7 @@ Numpad0 & NumpadHome::
 NumpadIns & Numpad7::
 NumpadIns & NumpadHome::
 {
-    global ACTION_NUM7
-    ExecuteAction(ACTION_NUM7)
+    ExecuteSlot(7)
 }
 
 Numpad0 & Numpad8::
@@ -116,8 +118,7 @@ Numpad0 & NumpadUp::
 NumpadIns & Numpad8::
 NumpadIns & NumpadUp::
 {
-    global ACTION_NUM8
-    ExecuteAction(ACTION_NUM8)
+    ExecuteSlot(8)
 }
 
 Numpad0 & Numpad9::
@@ -125,190 +126,182 @@ Numpad0 & NumpadPgUp::
 NumpadIns & Numpad9::
 NumpadIns & NumpadPgUp::
 {
-    global ACTION_NUM9
-    ExecuteAction(ACTION_NUM9)
+    ExecuteSlot(9)
 }
 
-; ═══════════════════════════════════════════════════════════════════════════
-; ACTION ROUTER
-; ═══════════════════════════════════════════════════════════════════════════
-ExecuteAction(actionName)
-{
-    if (actionName = "AutoClicker")
-        ToggleAutoClicker()
-    else if (actionName = "RobloxAFK")
-        ToggleRobloxAFK()
-    ; "HoldToggle" and "Disabled" do nothing here intentionally
-}
+
+; ███████████████████████████████████████████████████████████████████████████
+; ACTIONS — each class is 100% self-contained.
+; To add a new action: write a new class below, put its name in SLOT above.
+; To remove: delete the class, set slot to "Disabled".
+; Nothing else needs to change ever.
+; ███████████████████████████████████████████████████████████████████████████
+
 
 ; ═══════════════════════════════════════════════════════════════════════════
 ; AUTO CLICKER
+; ─────────────────────────────────────────────────────────────────────────
+; Repeatedly clicks the mouse at the current cursor position.
 ; ═══════════════════════════════════════════════════════════════════════════
-ToggleAutoClicker()
-{
-    static CLICK_SPEED := 250  ; Milliseconds between clicks
+class AutoClicker {
+    ; ── Settings ────────────────────────────────────────────────────────────
+    static CLICK_SPEED := 250       ; ms between clicks
 
-    global autoClickerRunning
-    autoClickerRunning := !autoClickerRunning
+    ; ── State ───────────────────────────────────────────────────────────────
+    static running := false
 
-    if (autoClickerRunning)
-        SetTimer AutoClickerLoop, CLICK_SPEED
-    else
-        SetTimer AutoClickerLoop, 0
+    ; ── Called by router ────────────────────────────────────────────────────
+    static Toggle() {
+        AutoClicker.running := !AutoClicker.running
+        if AutoClicker.running
+            SetTimer AutoClicker._Loop, AutoClicker.CLICK_SPEED
+        else
+            SetTimer AutoClicker._Loop, 0
+    }
+
+    ; ── Internal ─────────────────────────────────────────────────────────────
+    static _Loop() {
+        if !AutoClicker.running
+            return
+        Click
+    }
 }
 
-AutoClickerLoop()
-{
-    global autoClickerRunning
-    if !autoClickerRunning
-        return
-    Click
-}
 
 ; ═══════════════════════════════════════════════════════════════════════════
 ; HOLD TOGGLE
 ; ─────────────────────────────────────────────────────────────────────────
 ; Num0 + Key/Button        → hold that input down
 ; Num0 + same Key again    → release just that input
-; Num0 + 2 alone           → release ALL held inputs
+; Num0 + 2 (alone)         → release ALL held inputs
 ;
-; Supported: RButton, MButton, XButton1, XButton2,
-;            a-z, 0-9, F1-F12, Space, Tab, Enter,
-;            Backspace, Escape, Up, Down, Left, Right,
+; Supported inputs:
+;   Mouse  : RButton, MButton, XButton1, XButton2
+;   Letters: a–z
+;   Digits : 0–9
+;   Misc   : F1–F12, Space, Tab, Enter, Backspace, Escape,
+;            Up, Down, Left, Right,
 ;            LShift, RShift, LCtrl, RCtrl, LAlt, RAlt
-;
-; Uses SendEvent so it does not conflict with other AHK scripts
-; that use Send or SendInput.
 ; ═══════════════════════════════════════════════════════════════════════════
-HoldToggleCapture()
-{
-    global heldInputs
+class HoldToggle {
+    ; ── State ───────────────────────────────────────────────────────────────
+    static held := Map()
 
-    ; Give Windows time to register the co-pressed key/button
-    Sleep 40
+    ; ── Called by router ────────────────────────────────────────────────────
+    static Toggle() {
+        Sleep 40    ; let co-pressed key register in Windows
 
-    detectedKey := ""
+        key := HoldToggle._Detect()
 
-    ; ── Mouse buttons (LButton excluded — usually the trigger click itself) ─
-    static mouseButtons := ["RButton", "MButton", "XButton1", "XButton2"]
-    for btn in mouseButtons
-    {
-        if GetKeyState(btn, "P")
-        {
-            detectedKey := btn
-            break
+        if (key = "") {                         ; no extra key → release all
+            HoldToggle._ReleaseAll()
+            return
+        }
+
+        if HoldToggle.held.Has(key) {           ; already held → release it
+            SendEvent "{" key " up}"
+            HoldToggle.held.Delete(key)
+        } else {                                ; not held → hold it
+            SendEvent "{" key " down}"
+            HoldToggle.held[key] := true
         }
     }
 
-    ; ── Letters ────────────────────────────────────────────────────────────
-    if (detectedKey = "")
-    {
+    ; ── Internal: scan for a co-pressed key ─────────────────────────────────
+    static _Detect() {
+        static mouseButtons := ["RButton", "MButton", "XButton1", "XButton2"]
+        static extraKeys    := ["F1","F2","F3","F4","F5","F6","F7","F8","F9","F10","F11","F12",
+                                "Space","Tab","Enter","Backspace","Escape",
+                                "Up","Down","Left","Right",
+                                "LShift","RShift","LCtrl","RCtrl","LAlt","RAlt"]
+
+        for btn in mouseButtons
+            if GetKeyState(btn, "P")
+                return btn
+
         loop parse, "abcdefghijklmnopqrstuvwxyz"
-        {
             if GetKeyState(A_LoopField, "P")
-            {
-                detectedKey := A_LoopField
-                break
-            }
-        }
-    }
+                return A_LoopField
 
-    ; ── Digits ─────────────────────────────────────────────────────────────
-    if (detectedKey = "")
-    {
         loop parse, "0123456789"
-        {
             if GetKeyState(A_LoopField, "P")
-            {
-                detectedKey := A_LoopField
-                break
-            }
-        }
-    }
+                return A_LoopField
 
-    ; ── Function + misc keys ───────────────────────────────────────────────
-    if (detectedKey = "")
-    {
-        static extraKeys := ["F1","F2","F3","F4","F5","F6","F7","F8","F9","F10","F11","F12",
-                             "Space","Tab","Enter","Backspace","Escape",
-                             "Up","Down","Left","Right",
-                             "LShift","RShift","LCtrl","RCtrl","LAlt","RAlt"]
         for k in extraKeys
-        {
             if GetKeyState(k, "P")
-            {
-                detectedKey := k
-                break
-            }
-        }
+                return k
+
+        return ""
     }
 
-    ; ── No extra key = release everything ──────────────────────────────────
-    if (detectedKey = "")
-    {
-        ReleaseAllHeld()
-        return
+    ; ── Internal: release everything held ───────────────────────────────────
+    static _ReleaseAll() {
+        for key, _ in HoldToggle.held
+            SendEvent "{" key " up}"
+        HoldToggle.held := Map()
     }
-
-    ; ── Already held? Release only that one ────────────────────────────────
-    if heldInputs.Has(detectedKey)
-    {
-        SendEvent "{" detectedKey " up}"
-        heldInputs.Delete(detectedKey)
-        return
-    }
-
-    ; ── Not held? Hold it ──────────────────────────────────────────────────
-    SendEvent "{" detectedKey " down}"
-    heldInputs[detectedKey] := true
 }
 
-ReleaseAllHeld()
-{
-    global heldInputs
-    for key, _ in heldInputs
-        SendEvent "{" key " up}"
-    heldInputs := Map()
-}
 
 ; ═══════════════════════════════════════════════════════════════════════════
 ; ROBLOX AFK BYPASS
+; ─────────────────────────────────────────────────────────────────────────
+; Fires every 15 minutes. Finds Roblox on any desktop, performs
+; human-like input to reset the AFK timer, then restores focus.
 ; ═══════════════════════════════════════════════════════════════════════════
-ToggleRobloxAFK()
-{
-    global robloxAFKRunning
-    robloxAFKRunning := !robloxAFKRunning
+class RobloxAFK {
+    ; ── Settings ────────────────────────────────────────────────────────────
+    static PROCESS        := "RobloxPlayerBeta.exe"
+    static INTERVAL       := 900000    ; 15 minutes in ms
+    static CHECK_INTERVAL := 2000      ; retry interval when searching desktops
+    static MAX_SEARCH     := 30000     ; give up searching after 30 seconds
 
-    if (robloxAFKRunning)
-    {
-        RobloxAFKLoop()
-        SetTimer RobloxAFKLoop, 900000
+    ; ── State ───────────────────────────────────────────────────────────────
+    static running := false
+
+    ; ── Called by router ────────────────────────────────────────────────────
+    static Toggle() {
+        RobloxAFK.running := !RobloxAFK.running
+        if RobloxAFK.running {
+            RobloxAFK._Run()
+            SetTimer RobloxAFK._Run, RobloxAFK.INTERVAL
+        } else {
+            SetTimer RobloxAFK._Run, 0
+        }
     }
-    else
-    {
-        SetTimer RobloxAFKLoop, 0
+
+    ; ── Internal ─────────────────────────────────────────────────────────────
+    static _Run() {
+        if !RobloxAFK.running
+            return
+        if !ProcessExist(RobloxAFK.PROCESS)
+            return
+
+        if WinExist("ahk_exe " RobloxAFK.PROCESS) {
+            RobloxAFK._DoActions(WinActive("ahk_exe " RobloxAFK.PROCESS))
+            return
+        }
+
+        ; Roblox on another desktop — switch and search
+        originalWindow := WinGetID("A")
+        Send "{LWin down}{LCtrl down}{Right}{LWin up}{LCtrl up}"
+        Sleep 500
+
+        t := A_TickCount
+        while (A_TickCount - t) < RobloxAFK.MAX_SEARCH {
+            if WinExist("ahk_exe " RobloxAFK.PROCESS) {
+                RobloxAFK._DoActions(false)   ; always minimize after desktop switch
+                break
+            }
+            Sleep RobloxAFK.CHECK_INTERVAL
+        }
+
+        Send "{LWin down}{LCtrl down}{Left}{LWin up}{LCtrl up}"
+        Sleep 500
+        try WinActivate "ahk_id " originalWindow
     }
-}
 
-RobloxAFKLoop()
-{
-    static ROBLOX_PROCESS  := "RobloxPlayerBeta.exe"
-    static CHECK_INTERVAL  := 2000
-    static MAX_SEARCH_TIME := 30000
-
-    global robloxAFKRunning
-
-    if !robloxAFKRunning
-        return
-
-    if !ProcessExist(ROBLOX_PROCESS)
-        return
-
-    ; ── Scenario A: Roblox on current desktop ─────────────────────────────
-    if WinExist("ahk_exe " ROBLOX_PROCESS)
-    {
-        wasActive := WinActive("ahk_exe " ROBLOX_PROCESS)
-
+    static _DoActions(wasActive) {
         WinActivate
         Sleep 500
 
@@ -338,74 +331,10 @@ RobloxAFKLoop()
         Send "y"
         Sleep 200
 
-        if !wasActive
-        {
+        if !wasActive {
             Sleep 600
             WinMinimize
             Sleep 300
         }
-
-        return
-    }
-
-    ; ── Scenario B: Roblox on another desktop ─────────────────────────────
-    originalWindow := WinGetID("A")
-
-    Send "{LWin down}{LCtrl down}{Right}{LWin up}{LCtrl up}"
-    Sleep 500
-
-    searchStartTime := A_TickCount
-
-    while ((A_TickCount - searchStartTime) < MAX_SEARCH_TIME)
-    {
-        if WinExist("ahk_exe " ROBLOX_PROCESS)
-        {
-            WinActivate
-            Sleep 500
-
-            Send "{Right down}"
-            Sleep 1000
-            Send "{Right up}"
-            Sleep 100
-
-            Send "{Left down}"
-            Sleep 1000
-            Send "{Left up}"
-            Sleep 100
-
-            Send "y"
-            Sleep 2000
-
-            SendEvent "{Click 1160 893}"
-            Sleep 300
-            SendEvent "{Click 1177 877}"
-            Sleep 2800
-
-            SendEvent "{Click 813 383}"
-            Sleep 300
-            SendEvent "{Click 806 340}"
-            Sleep 400
-
-            Send "y"
-            Sleep 200
-
-            Send "y"
-            Sleep 200
-
-            Sleep 600
-            WinMinimize
-            Sleep 300
-
-            break
-        }
-
-        Sleep CHECK_INTERVAL
-    }
-
-    Send "{LWin down}{LCtrl down}{Left}{LWin up}{LCtrl up}"
-    Sleep 500
-
-    try {
-        WinActivate "ahk_id " originalWindow
     }
 }
