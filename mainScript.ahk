@@ -154,9 +154,9 @@ class AutoClicker {
     static Toggle() {
         AutoClicker.running := !AutoClicker.running
         if AutoClicker.running
-            SetTimer AutoClicker._Loop, AutoClicker.CLICK_SPEED
+            SetTimer ObjBindMethod(AutoClicker, "_Loop"), AutoClicker.CLICK_SPEED
         else
-            SetTimer AutoClicker._Loop, 0
+            SetTimer ObjBindMethod(AutoClicker, "_Loop"), 0
     }
 
     ; ── Internal ─────────────────────────────────────────────────────────────
@@ -264,9 +264,9 @@ class RobloxAFK {
         RobloxAFK.running := !RobloxAFK.running
         if RobloxAFK.running {
             RobloxAFK._Run()
-            SetTimer RobloxAFK._Run, RobloxAFK.INTERVAL
+            SetTimer ObjBindMethod(RobloxAFK, "_Run"), RobloxAFK.INTERVAL
         } else {
-            SetTimer RobloxAFK._Run, 0
+            SetTimer ObjBindMethod(RobloxAFK, "_Run"), 0
         }
     }
 
